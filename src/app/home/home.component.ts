@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 // 数据库相关
 import { userColt } from '../database/collection/user.collection';
@@ -9,16 +9,13 @@ import { DB } from '../database/db.helper';
  */
 const { dialog } = require('electron').remote;
 const fs = require('fs');
-// node
-import { Buffer } from 'buffer';
 
 interface UserData {
   id: string;
   name: string;
   age: number;
   gender: { key: string, value: number };
-  idCard: string;
-  filename: string;
+  id_card: string;
 }
 
 @Component({
@@ -29,13 +26,10 @@ interface UserData {
 })
 export class HomeComponent implements OnInit {
 
-  // 获取input[type=file]
-  @ViewChild('iptFile') iptFile: ElementRef;
-
   // 存储所有用户数据
   public userData: Array<UserData> = [];
   // 插入模态框
-  public insertDgDisplay = false;
+  public userInfoDgDiaplay = false;
   public dialogHeader = '添加数据';
   // 下拉框选项
   public dropdownOption = [{ key: '男', value: 0 }, { key: '女', value: 1 }]
@@ -44,17 +38,10 @@ export class HomeComponent implements OnInit {
     name: '',
     age: 0,
     gender: { key: '男', value: 0 },
-    idCard: '',
-    filename: ''
+    id_card: ''
   }
   // 记录当前操作的数据的id
   public currentDataId: string;
-  // 文件数组
-  public filesArr = new FormData();
-  // 文件名
-  public filename: string = '';
-  // 禁用按钮
-  public uploadBtnDis = false;
 
   constructor(
     public messageService: MessageService,
@@ -75,8 +62,7 @@ export class HomeComponent implements OnInit {
             name: item.name ?? '',
             age: item.age ?? null,
             gender: { key: item.gender === 0 ? '男' : '女', value: item.gender },
-            idCard: item.idCard ?? '',
-            filename: item.allAttachments()[0]?.id ?? ''
+            id_card: item.id_card ?? ''
           }
         }).reverse();
       } else {
@@ -88,29 +74,28 @@ export class HomeComponent implements OnInit {
   // 打开添加数据模态框
   openInsertDialog(header: string) {
     this.dialogHeader = header;
-    this.insertDgDisplay = true;
-    this.uploadBtnDis = false;
+    this.userInfoDgDiaplay = true;
   }
   closeInsertDialog() {
-    this.insertDgDisplay = false;
-    this.userInfo = { name: '', age: 0, gender: { key: '男', value: 0 }, idCard: '', filename: '' };
+    this.userInfoDgDiaplay = false;
+    this.userInfo = { name: '', age: 0, gender: { key: '男', value: 0 }, id_card: '' };
   }
 
   // 添加数据
   async insertData() {
-    // idCard为必填项
-    if (!this.userInfo.idCard) {
+    // id_card为必填项
+    if (!this.userInfo.id_card) {
       this.messageService.add({ severity: 'warn', summary: '警告', detail: '身份证号为必填项', life: 3000 });
       return;
     }
 
-    let { name, age, gender, idCard } = this.userInfo;
-    let data = new UserCls(name, age, gender['value'], idCard);
+    let { name, age, gender, id_card } = this.userInfo;
+    let data = new UserCls(name, age, gender['value'], id_card);
 
     try {
-      // 首先查询是否有相同的idCard
+      // 首先查询是否有相同的id_card
       (await userColt).find().exec().then(async d => {
-        let res = d.find(item => item.idCard === data['idCard']);
+        let res = d.find(item => item.id_card === data['id_card']);
         if (res) {
           this.messageService.add({ severity: 'warn', summary: '警告', detail: '身份证号重复', life: 3000 });
         } else {
@@ -129,20 +114,6 @@ export class HomeComponent implements OnInit {
               }
               // 拼接上数据库生成的id
               temp['id'] = doc.id;
-
-              // 是否有文件判断
-              if (this.filesArr.getAll('files').length) {
-                // 插入文件
-                for (let i = 0; i < this.filesArr.getAll('files').length; i++) {
-                  doc.putAttachment({ id: this.filesArr.getAll('files')[i]['name'], data: this.filesArr.getAll('files')[i], type: this.filesArr.getAll('files')[i]['type'] }).then(res => {
-                    temp['filename'] = res.id;
-                  }).catch(err => {
-                    this.messageService.add({ severity: 'error', summary: '失败', detail: '附件添加失败！', life: 3000 });
-                  });
-                }
-                // 清空formData数据
-                this.filesArr = new FormData();
-              }
 
               this.userData.unshift(temp as UserData);
               // 提示
@@ -165,10 +136,6 @@ export class HomeComponent implements OnInit {
     this.openInsertDialog('修改数据');
     this.currentDataId = params.id;
     this.userInfo = params;
-    // 只能传一个文件
-    if (params.filename) {
-      this.uploadBtnDis = true;
-    }
   }
 
   // 修改数据
@@ -180,28 +147,17 @@ export class HomeComponent implements OnInit {
           oldData.name = this.userInfo.name;
           oldData.age = this.userInfo.age;
           oldData.gender = this.userInfo.gender['value'];
-          oldData.idCard = this.userInfo.idCard;
+          oldData.id_card = this.userInfo.id_card;
           return oldData;
         }
 
         // 更新数据[原子更新]
         doc.atomicUpdate(changeFunc).then(res => {
-          if (!(res.allAttachments()).length) {
-            for (let i = 0; i < this.filesArr.getAll('files').length; i++) {
-              res.putAttachment({ id: this.filesArr.getAll('files')[i]['name'], data: this.filesArr.getAll('files')[i], type: this.filesArr.getAll('files')[i]['type'] }, true).then(r => {
-                this.userData.filter(item => item.id === this.currentDataId)[0]['filename'] = r.id;
-              }).catch(err => {
-                this.messageService.add({ severity: 'error', summary: '失败', detail: '附件添加失败！', life: 3000 });
-              });
-            }
-            this.filesArr = new FormData();
-          }
+          this.messageService.add({ severity: 'success', summary: '成功', detail: '数据修改成功', life: 3000 });
           this.closeInsertDialog();
         }).catch(err => {
           this.messageService.add({ severity: 'error', summary: '失败', detail: '数据修改失败', life: 3000 });
         });
-
-        this.messageService.add({ severity: 'success', summary: '成功', detail: '数据修改成功', life: 3000 });
       } else {
         this.messageService.add({ severity: 'error', summary: '失败', detail: '该数据不存在', life: 3000 });
       }
@@ -294,70 +250,6 @@ export class HomeComponent implements OnInit {
           this.messageService.add({ severity: 'error', summary: '失败', detail: `数据导出错误：${err}`, life: 3000 });
         });
       }
-    });
-  }
-
-  // 文件上传
-  uploadFiles() {
-    this.iptFile.nativeElement.click();
-    this.iptFile.nativeElement.onchange = (e: any) => {
-      let file = e.target.files[0]; // 取得一个文件
-      let type = file?.type; // 文件类型
-      if (type) {
-        this.filesArr.append('files', file);
-        this.userInfo.filename = file.name;
-      } else {
-        this.messageService.add({ severity: 'warn', summary: '警告', detail: '请选择正确的文件类型！', life: 3000 });
-      }
-    }
-  }
-
-  // 文件下载
-  async downloadFile(params: UserData) {
-    let that = this;
-    (await userColt).findOne({ selector: { id: params.id } }).exec().then(doc => {
-      if (!(doc.allAttachments()).length) {
-        this.messageService.add({ severity: 'warn', summary: '警告', detail: '文件不存在' });
-        return;
-      }
-      doc.getAttachment(params.filename).getData().then(res => {
-
-        // 选择下载位置
-        dialog.showSaveDialog({ title: '请选择文件下载位置', defaultPath: params.filename, buttonLabel: '确定' }).then(path => {
-          if (!path.canceled) {
-            // 创建FileReader对象
-            const readFile = new FileReader();
-
-            readFile.onload = function (e) {
-              const choosePath = (path.filePath).replace(/\\/g, '/');
-              // 将ArrayBuffer转换为buffer
-              const buffer = Buffer.from(e.target.result as ArrayBuffer);
-              // 创建一个可写流
-              const ws = fs.createWriteStream(choosePath);
-              try {
-                ws.once('open', function () {
-                  console.log('流文件已打开，buffer写入中...');
-                });
-                ws.once('close', () => {
-                  console.log('流文件已关闭，buffer写入完成');
-                });
-                // 将文件内容(buffer)写入文件
-                ws.write(buffer);
-                ws.end();
-              } catch (error) {
-                that.messageService.add({ severity: 'error', summary: '失败', detail: '文件下载失败！' + error, life: 3000 });
-                return;
-              }
-              that.messageService.add({ severity: 'success', summary: '成功', detail: '文件下载成功！', life: 3000 });
-            }
-
-            // 读取文件内容
-            readFile.readAsArrayBuffer(res);
-          }
-        });
-      });
-    }).catch(err => {
-      this.messageService.add({ severity: 'error', summary: '错误', detail: '该数据不存在' });
     });
   }
 

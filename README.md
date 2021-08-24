@@ -1,4 +1,4 @@
-# RXdb-Demo
+# Rxdb-Demo
 
 **template：angular-electron**
 
@@ -10,13 +10,9 @@
 
  - 项目构建： `npm run electorn:build`
 
-分支说明：`master` - 关于附件
+分支说明：`base`
 
- - 附件上传下载只局限于本机，数据导出 `exportJSON` 不包含当前数据库附件信息。
-
- - 每条数据 附件 只允许上传一份 [代码中做的限制]。
-
- - 附件下载 采用 `Blob -> ArrayBuffer -> Buffer -> write` [node]
+ - 此分支只有基本的关于 `user collection`的 `CURD` 和数据的导入导出。
 
 **项目运行界面预览图**
 
