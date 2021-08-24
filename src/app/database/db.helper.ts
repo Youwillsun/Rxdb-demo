@@ -5,11 +5,11 @@ import * as leveldown from 'leveldown';
 import * as pouchdbAdapterLeveldb from 'pouchdb-adapter-leveldb';
 addPouchPlugin(pouchdbAdapterLeveldb);
 
-import { DBNAME, DBPASSWORD, PATH } from './db.const';
+import { DBNAME, DBPASSWORD } from './db.const';
 
 const createDB = async () => {
     return await createRxDatabase({
-        name: PATH + '/' + DBNAME,
+        name: 'tcx-data/db/' + DBNAME,
         storage: getRxStoragePouch(leveldown),
         password: DBPASSWORD,
         multiInstance: true,

@@ -7,8 +7,8 @@
         <div fxLayout="row" fxLayoutGap="1vw">
           <button pButton pRipple type="button" label="导入数据" pTooltip="只接受 json 格式文件。" icon="pi pi-cloud-download"
             class="p-button-raised" (click)="importJsonFun()"></button>
-          <button pButton pRipple type="button" label="导出数据"
-            icon="pi pi-cloud-upload" class="p-button-raised" (click)="exportJsonFun()"></button>
+          <button pButton pRipple type="button" label="导出数据" icon="pi pi-cloud-upload" class="p-button-raised"
+            (click)="exportJsonFun()"></button>
         </div>
       </div>
     </ng-template>
@@ -36,6 +36,13 @@
           <td style="display: flex;justify-content: space-evenly;">
             <button pButton pRipple icon="pi pi-pencil" title="修改数据" class="p-button-rounded p-button-warning p-mr-2"
               (click)="openUpdateDataDialog(data)"></button>
+
+            <button pButton pRipple icon="pi pi-upload" title="上传附件" class="p-button-rounded p-button-primary p-mr-2"
+              (click)="uploadAttachment(data)"></button>
+
+            <button pButton pRipple icon="pi pi-table" title="查看附件" class="p-button-rounded p-button-primary p-mr-2"
+              (click)="viewAttachment(data)"></button>
+
             <button pButton pRipple icon="pi pi-trash" title="删除数据" class="p-button-rounded p-button-danger"
               (click)="deleteData($event, data)"></button>
           </td>
@@ -59,8 +66,9 @@
 <!-- 提示 -->
 <p-toast position="top-center"></p-toast>
 <p-confirmPopup></p-confirmPopup>
+<p-confirmDialog [style]="{width: '50vw'}" [baseZIndex]="10000" key="confirmDialog"></p-confirmDialog>
 
-<!-- dialog——添加 -->
+<!-- dialog——添加 user info -->
 <p-dialog [header]="dialogHeader" [(visible)]="userInfoDgDiaplay" [style]="{width: '50vw'}"
   (onHide)="closeInsertDialog()">
   <div class="content">

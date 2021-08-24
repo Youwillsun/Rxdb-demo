@@ -3,12 +3,16 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 // 数据库相关
 import { userColt } from '../database/collection/user.collection';
 import { UserCls } from '../database/schemas/user.schema';
+import { attachmentColt } from '../database/collection/attachment.collection';
+import { attachmentSchema } from '../database/schemas/attachment.schema';
 import { DB } from '../database/db.helper';
+import { FILEPATH } from '../database/db.const';
 /**
  * Electron dialog：https://www.electronjs.org/docs/api/dialog
  */
 const { dialog } = require('electron').remote;
 const fs = require('fs');
+import { copyFile, checkDirectory, checkFile } from '../shared/utils/file_handler';
 
 interface UserData {
   id: string;
@@ -251,6 +255,58 @@ export class HomeComponent implements OnInit {
         });
       }
     });
+  }
+
+  // 上传附件
+  uploadAttachment(params: UserData) {
+    dialog.showOpenDialog({ title: '请选择文件', properties: ['showHiddenFiles', 'openFile'] }).then((path: { canceled: boolean, filePaths: Array<string> }) => {
+      if (!path.canceled) {
+        // 创建文件夹
+        checkDirectory(FILEPATH).then(m => {
+          const filePathSplit = path.filePaths[0].split('\\');
+          // 检查文件是否存在
+          checkFile(FILEPATH + filePathSplit[filePathSplit.length - 1]).then((f: any) => {
+            // 拷贝文件
+            const copyFileFun = () => {
+              copyFile(path.filePaths[0], FILEPATH + filePathSplit[filePathSplit.length - 1]).then(res => {
+                console.log(res);
+                // 文件拷贝成功，将文件相对目录写入文件
+
+
+
+
+              }).catch(err => {
+                console.log('文件拷贝出错', err);
+              });
+            }
+
+            // 如果文件已经存在
+            if (f.data) {
+              this.confirmationService.confirm({
+                message: `已经存在名为 **${filePathSplit[filePathSplit.length - 1]}** 的文件，是否要进行覆盖？`,
+                header: '请确认',
+                icon: 'pi pi-exclamation-triangle',
+                accept: () => {
+                  copyFileFun();
+                },
+                key: 'confirmDialog'
+              })
+            } else {
+              copyFileFun();
+            }
+          }).catch(err => {
+            console.log('文件检查出错', err);
+          });
+        }).catch(err => {
+          console.log('目录检查出错', err);
+        });
+      }
+    });
+  }
+
+  // 查看附件
+  viewAttachment() {
+
   }
 
 }

@@ -12,6 +12,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 const MODULE = [
   ButtonModule,
@@ -24,7 +25,8 @@ const MODULE = [
   InputNumberModule,
   ConfirmPopupModule,
   TagModule,
-  TooltipModule
+  TooltipModule,
+  ConfirmDialogModule
 ]
 
 @NgModule({
