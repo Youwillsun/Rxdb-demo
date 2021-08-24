@@ -12,7 +12,7 @@ interface UserSchema {
         type: number,
         default: number
     },
-    id__card: {
+    id_card: {
         type: string,
         final: boolean
     }
@@ -40,13 +40,13 @@ export const userSchema: RxJsonSchema<UserSchema> = {
             type: 'number',
             default: 0
         },
-        id__card: {
+        id_card: {
             type: 'string'
         }
     },
     // 附件
     attachments:{},
-    required: ['id', 'id__card']
+    required: ['id', 'id_card']
 }
 
 export class UserCls {
@@ -54,13 +54,13 @@ export class UserCls {
     public name: string;
     public age: number;
     public gender: number;
-    public id__card: string;
+    public id_card: string;
 
-    constructor(name: string, age: number, gender: number, id__card: string) {
+    constructor(name: string, age: number, gender: number, id_card: string) {
         this.id = generateSnowID();
         this.name = name;
         this.age = age;
         this.gender = gender;
-        this.id__card = id__card;
+        this.id_card = id_card;
     }
 }
