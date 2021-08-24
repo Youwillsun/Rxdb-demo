@@ -33,7 +33,7 @@
           <td>{{data.name}}</td>
           <td>{{data.age}}</td>
           <td>{{data.gender['key']}}</td>
-          <td>{{data.idCard}}</td>
+          <td>{{data.id__card}}</td>
           <td>{{data.filename}}</td>
           <td style="display: flex;justify-content: space-evenly;">
             <button pButton pRipple icon="pi pi-pencil" title="修改数据" class="p-button-rounded p-button-warning p-mr-2"
@@ -65,7 +65,7 @@
 <p-confirmPopup></p-confirmPopup>
 
 <!-- dialog——添加 -->
-<p-dialog [header]="dialogHeader" [(visible)]="insertDgDisplay" [style]="{width: '50vw'}"
+<p-dialog [header]="dialogHeader" [(visible)]="userInfoDgDiaplay" [style]="{width: '50vw'}"
   (onHide)="closeInsertDialog()">
   <div class="content">
     <div fxLayout="row" fxLayoutAlign="start center">
@@ -84,8 +84,8 @@
         optionLabel="key" [showClear]="false"></p-dropdown>
     </div>
     <div fxLayout="row" fxLayoutAlign="start center">
-      <label for="idCard" class="p-col-fixed">身份证号</label>
-      <input id="idCard" type="text" pInputText [(ngModel)]="userInfo['idCard']">
+      <label for="id__card" class="p-col-fixed">身份证号</label>
+      <input id="id__card" type="text" pInputText [(ngModel)]="userInfo['id__card']">
     </div>
     <!-- 上传文件 -->
     <div class="uploadBox" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">

@@ -17,7 +17,7 @@ interface UserData {
   name: string;
   age: number;
   gender: { key: string, value: number };
-  idCard: string;
+  id__card: string;
   filename: string;
 }
 
@@ -35,7 +35,7 @@ export class HomeComponent implements OnInit {
   // 存储所有用户数据
   public userData: Array<UserData> = [];
   // 插入模态框
-  public insertDgDisplay = false;
+  public userInfoDgDiaplay = false;
   public dialogHeader = '添加数据';
   // 下拉框选项
   public dropdownOption = [{ key: '男', value: 0 }, { key: '女', value: 1 }]
@@ -44,7 +44,7 @@ export class HomeComponent implements OnInit {
     name: '',
     age: 0,
     gender: { key: '男', value: 0 },
-    idCard: '',
+    id__card: '',
     filename: ''
   }
   // 记录当前操作的数据的id
@@ -75,7 +75,7 @@ export class HomeComponent implements OnInit {
             name: item.name ?? '',
             age: item.age ?? null,
             gender: { key: item.gender === 0 ? '男' : '女', value: item.gender },
-            idCard: item.idCard ?? '',
+            id__card: item.id__card ?? '',
             filename: item.allAttachments()[0]?.id ?? ''
           }
         }).reverse();
@@ -88,29 +88,29 @@ export class HomeComponent implements OnInit {
   // 打开添加数据模态框
   openInsertDialog(header: string) {
     this.dialogHeader = header;
-    this.insertDgDisplay = true;
+    this.userInfoDgDiaplay = true;
     this.uploadBtnDis = false;
   }
   closeInsertDialog() {
-    this.insertDgDisplay = false;
-    this.userInfo = { name: '', age: 0, gender: { key: '男', value: 0 }, idCard: '', filename: '' };
+    this.userInfoDgDiaplay = false;
+    this.userInfo = { name: '', age: 0, gender: { key: '男', value: 0 }, id__card: '', filename: '' };
   }
 
   // 添加数据
   async insertData() {
-    // idCard为必填项
-    if (!this.userInfo.idCard) {
+    // id__card为必填项
+    if (!this.userInfo.id__card) {
       this.messageService.add({ severity: 'warn', summary: '警告', detail: '身份证号为必填项', life: 3000 });
       return;
     }
 
-    let { name, age, gender, idCard } = this.userInfo;
-    let data = new UserCls(name, age, gender['value'], idCard);
+    let { name, age, gender, id__card } = this.userInfo;
+    let data = new UserCls(name, age, gender['value'], id__card);
 
     try {
-      // 首先查询是否有相同的idCard
+      // 首先查询是否有相同的id__card
       (await userColt).find().exec().then(async d => {
-        let res = d.find(item => item.idCard === data['idCard']);
+        let res = d.find(item => item.id__card === data['id__card']);
         if (res) {
           this.messageService.add({ severity: 'warn', summary: '警告', detail: '身份证号重复', life: 3000 });
         } else {
@@ -180,7 +180,7 @@ export class HomeComponent implements OnInit {
           oldData.name = this.userInfo.name;
           oldData.age = this.userInfo.age;
           oldData.gender = this.userInfo.gender['value'];
-          oldData.idCard = this.userInfo.idCard;
+          oldData.id__card = this.userInfo.id__card;
           return oldData;
         }
 

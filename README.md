@@ -1,4 +1,4 @@
-# RXdb-Demo
+# Rxdb-Demo
 
 **template：angular-electron**
 
