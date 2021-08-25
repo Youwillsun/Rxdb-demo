@@ -69,7 +69,7 @@
 <p-confirmDialog [style]="{width: '50vw'}" [baseZIndex]="10000" key="confirmDialog"></p-confirmDialog>
 
 <!-- dialog——添加 user info -->
-<p-dialog [header]="dialogHeader" [(visible)]="userInfoDgDiaplay" [style]="{width: '50vw'}"
+<p-dialog [header]="dialogHeader" [(visible)]="userInfoDgDisplay" [style]="{width: '50vw'}" [modal]="true"
   (onHide)="closeInsertDialog()">
   <div class="content">
     <div fxLayout="row" fxLayoutAlign="start center">
@@ -98,4 +98,20 @@
     <p-button icon="pi pi-check" label="保存" styleClass="p-button-raised" (click)="updateData()"
       *ngIf="dialogHeader==='修改数据'"></p-button>
   </ng-template>
+</p-dialog>
+
+<!-- dialog-展示附件信息 -->
+<p-dialog header="查看附件" [(visible)]="attachmentDgDisplay" [style]="{width: '50vw'}" [modal]="true">
+  <p-card [header]="attachmentInfo['belonger']">
+    <div class="attachmentBox" fxLayout="row" fxLayoutAlign="space-between center"
+      *ngFor="let item of attachmentInfo['attachment']">
+      <p class="name">{{item.filename}}</p>
+      <div class="optBox" fxLayout="row" fxLayoutGap="5px">
+        <button pButton pRipple type="button" icon="pi pi-download" label="下载"
+          class="p-button-raised p-button-primary p-button-sm" (click)="downloadAttachment(item)"></button>
+        <button pButton pRipple type="button" icon="pi pi-ban" label="删除"
+          class="p-button-raised p-button-danger p-button-sm" (click)="deleteAttachment(item)"></button>
+      </div>
+    </div>
+  </p-card>
 </p-dialog>

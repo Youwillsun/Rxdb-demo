@@ -1,5 +1,9 @@
 {
   "asar": false,
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  },
   "directories": {
     "output": "release/"
   },
@@ -22,7 +26,7 @@
   "win": {
     "icon": "dist/assets/icons",
     "target": [
-      "portable"
+      "nsis"
     ]
   },
   "portable": {

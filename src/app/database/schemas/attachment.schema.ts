@@ -8,8 +8,7 @@ interface AttachmentSchema {
     },
     user_id: string,
     filename: string,
-    filepath: string,
-    filesummary: string
+    filepath: string
 }
 
 export const attachmentSchema: RxJsonSchema<AttachmentSchema> = {
@@ -31,9 +30,6 @@ export const attachmentSchema: RxJsonSchema<AttachmentSchema> = {
         },
         filepath: {
             type: 'string'
-        },
-        filesummary: {
-            type: 'string'
         }
     },
     required: ["id", "user_id"]
@@ -44,13 +40,11 @@ export class AttachmentCls {
     public user_id: string;
     public filename: string;
     public filepath: string;
-    public filesummary: string;
 
-    constructor(user_id: string, filename: string, filepath: string, filesummary: string) {
+    constructor(user_id: string, filename: string, filepath: string) {
         this.id = generateSnowID();
         this.user_id = user_id;
         this.filename = filename;
         this.filepath = filepath;
-        this.filesummary = filesummary;
     }
 }

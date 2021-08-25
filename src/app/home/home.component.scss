@@ -7,24 +7,36 @@
 
 ::ng-deep .p-dialog {
   .p-dialog-content {
+    padding: 0 1vw;
     .content {
       div+div {
         margin-top: 1vh;
       }
+
       label {
         width: 100px;
         text-align: right;
         margin-right: 1vw;
       }
+
       input {
         width: 33vw;
       }
+
       .p-inputnumber {
         width: 33vw;
       }
+
       .p-dropdown {
         width: 33vw;
       }
+    }
+  }
+
+  .attachmentBox {
+    .name {
+      font-size: 1rem;
+      font-weight: bold;
     }
   }
 }

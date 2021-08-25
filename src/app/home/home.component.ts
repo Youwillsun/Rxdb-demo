@@ -4,7 +4,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { userColt } from '../database/collection/user.collection';
 import { UserCls } from '../database/schemas/user.schema';
 import { attachmentColt } from '../database/collection/attachment.collection';
-import { attachmentSchema } from '../database/schemas/attachment.schema';
+import { AttachmentCls } from '../database/schemas/attachment.schema';
 import { DB } from '../database/db.helper';
 import { FILEPATH } from '../database/db.const';
 /**
@@ -12,7 +12,8 @@ import { FILEPATH } from '../database/db.const';
  */
 const { dialog } = require('electron').remote;
 const fs = require('fs');
-import { copyFile, checkDirectory, checkFile } from '../shared/utils/file_handler';
+import { copyFile, checkDirectory, checkFile, deleteFile } from '../shared/utils/file_handler';
+const path = require('path');
 
 interface UserData {
   id: string;
@@ -32,8 +33,8 @@ export class HomeComponent implements OnInit {
 
   // 存储所有用户数据
   public userData: Array<UserData> = [];
-  // 插入模态框
-  public userInfoDgDiaplay = false;
+  // 用户数据模态框
+  public userInfoDgDisplay = false;
   public dialogHeader = '添加数据';
   // 下拉框选项
   public dropdownOption = [{ key: '男', value: 0 }, { key: '女', value: 1 }]
@@ -46,6 +47,14 @@ export class HomeComponent implements OnInit {
   }
   // 记录当前操作的数据的id
   public currentDataId: string;
+
+  // 查看附件模态框
+  public attachmentDgDisplay = false;
+  // 附件信息
+  public attachmentInfo = {
+    belonger: '',
+    attachment: []
+  }
 
   constructor(
     public messageService: MessageService,
@@ -78,10 +87,10 @@ export class HomeComponent implements OnInit {
   // 打开添加数据模态框
   openInsertDialog(header: string) {
     this.dialogHeader = header;
-    this.userInfoDgDiaplay = true;
+    this.userInfoDgDisplay = true;
   }
   closeInsertDialog() {
-    this.userInfoDgDiaplay = false;
+    this.userInfoDgDisplay = false;
     this.userInfo = { name: '', age: 0, gender: { key: '男', value: 0 }, id_card: '' };
   }
 
@@ -235,7 +244,7 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // 导出数据到指定文件
+  // 导出数据到指定文件夹
   exportJsonFun() {
     dialog.showSaveDialog({ title: '请选择文件导出位置', defaultPath: `export-${new Date().getTime()}`, buttonLabel: '确定', filters: [{ name: 'JSON Files', extensions: ['json'] }], properties: ['showHiddenFiles'] }).then(async (path: { canceled: boolean, filePath?: string }) => {
       // 如果用户选择了文件路径
@@ -264,26 +273,25 @@ export class HomeComponent implements OnInit {
         // 创建文件夹
         checkDirectory(FILEPATH).then(m => {
           const filePathSplit = path.filePaths[0].split('\\');
+          const filename = filePathSplit[filePathSplit.length - 1];
           // 检查文件是否存在
-          checkFile(FILEPATH + filePathSplit[filePathSplit.length - 1]).then((f: any) => {
+          checkFile(FILEPATH + filename).then((f: any) => {
             // 拷贝文件
             const copyFileFun = () => {
-              copyFile(path.filePaths[0], FILEPATH + filePathSplit[filePathSplit.length - 1]).then(res => {
-                console.log(res);
+              copyFile(path.filePaths[0], FILEPATH + filename).then(res => {
+
                 // 文件拷贝成功，将文件相对目录写入文件
-
-
-
+                this.saveUploadFileToDB(params.id, filename, FILEPATH + filename);
 
               }).catch(err => {
-                console.log('文件拷贝出错', err);
+                this.messageService.add({ severity: 'error', summary: '失败', detail: `附件上传失败：${err?.describe ?? err}`, life: 3000 });
               });
             }
 
             // 如果文件已经存在
             if (f.data) {
               this.confirmationService.confirm({
-                message: `已经存在名为 **${filePathSplit[filePathSplit.length - 1]}** 的文件，是否要进行覆盖？`,
+                message: `已经存在名为 **${filename}** 的文件，是否要进行覆盖？`,
                 header: '请确认',
                 icon: 'pi pi-exclamation-triangle',
                 accept: () => {
@@ -295,18 +303,96 @@ export class HomeComponent implements OnInit {
               copyFileFun();
             }
           }).catch(err => {
-            console.log('文件检查出错', err);
+            this.messageService.add({ severity: 'error', summary: '失败', detail: `附件上传失败：${err?.describe ?? err}`, life: 3000 });
           });
         }).catch(err => {
-          console.log('目录检查出错', err);
+          this.messageService.add({ severity: 'error', summary: '失败', detail: `附件上传失败：${err?.describe ?? err}`, life: 3000 });
         });
       }
     });
   }
 
-  // 查看附件
-  viewAttachment() {
+  // 将上传的文件保存到数据库中
+  async saveUploadFileToDB(user_id: string, filename: string, filepath: string = FILEPATH) {
+    let data = new AttachmentCls(user_id, filename, filepath);
 
+    (await attachmentColt).findOne({ selector: { filename: filename, filepath: filepath } }).exec().then(async doc => {
+      if (doc) {
+        // 表示数据库中已存在相同文件名称和路径
+        return;
+      } else {
+        // 如果不存在则插入到文档中
+        (await attachmentColt).insert(data).then(res => {
+          this.messageService.add({ severity: 'success', summary: '成功', detail: `文件上传成功`, life: 3000 });
+        }).catch(err => {
+          this.messageService.add({ severity: 'error', summary: '失败', detail: `文件上传失败：${err}`, life: 3000 });
+        });
+      }
+    }).catch(err => {
+      this.messageService.add({ severity: 'error', summary: '失败', detail: `文件上传失败：${err}`, life: 3000 });
+    });
   }
 
+  // 查看附件
+  async viewAttachment(params: UserData) {
+    const userQuery = (await userColt).findOne({ selector: { id: params.id } }).exec();
+    const attachmentQuery = (await attachmentColt).find({ selector: { user_id: params.id } }).exec();
+
+    Promise.all([userQuery, attachmentQuery]).then(res => {
+      const userInfo = res[0];
+      const attachmentInfo = res[1];
+
+      this.attachmentInfo = {
+        belonger: userInfo.get('name'),
+        attachment: attachmentInfo.map(item => {
+          return {
+            filename: item.filename,
+            filepath: item.filepath,
+            id: item.id,
+            user_id: item.user_id
+          }
+        }).reverse()
+      }
+      // 打开模态框
+      this.attachmentDgDisplay = true;
+    }).catch(err => {
+      this.messageService.add({ severity: 'error', summary: '失败', detail: `附件查询失败：${err}`, life: 3000 });
+    });
+  }
+
+  // 下载附件
+  downloadAttachment(params) {
+    dialog.showOpenDialog({ title: '请选择文件下载位置', properties: ['openDirectory'] }).then((p: { canceled: boolean, filePaths: Array<any> }) => {
+      if (!p.canceled) {
+        const choosePath = p.filePaths[0].replace(/\\/g, '/') + '/' + params.filename;
+        copyFile(params.filepath, choosePath).then(res => {
+          console.log(res);
+          this.messageService.add({ severity: 'success', summary: '成功', detail: `附件下载成功`, life: 3000 });
+        }).catch(err => {
+          this.messageService.add({ severity: 'error', summary: '失败', detail: `附件下载失败：${err?.describe ?? err}`, life: 3000 });
+        });
+      }
+    });
+  }
+
+  // 删除附件
+  deleteAttachment(params) {
+    // 删除附件
+    deleteFile(params.filepath).then(async res => {
+      (await attachmentColt).findOne({ selector: { id: params.id } }).exec().then(doc => {
+        try {
+          // 删除数据库中的附件数据
+          doc.remove();
+          this.attachmentInfo.attachment = this.attachmentInfo.attachment.filter(item=>item.id !== params.id);
+          this.messageService.add({ severity: 'success', summary: '成功', detail: `附件删除成功`, life: 3000 });
+        } catch (error) {
+          this.messageService.add({ severity: 'error', summary: '失败', detail: `附件删除失败：${error?.describe ?? error}`, life: 3000 });
+        }
+      }).catch(err => {
+        this.messageService.add({ severity: 'error', summary: '失败', detail: `附件删除失败：${err?.describe ?? err}`, life: 3000 });
+      });
+    }).catch(err => {
+      this.messageService.add({ severity: 'error', summary: '失败', detail: `附件删除失败：${err?.describe ?? err}`, life: 3000 });
+    });
+  }
 }
