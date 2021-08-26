@@ -1,15 +1,13 @@
-import { createRxDatabase, addPouchPlugin, getRxStoragePouch, addRxPlugin } from 'rxdb';
-import { RxDBBackupPlugin } from 'rxdb/plugins/backup';
-addRxPlugin(RxDBBackupPlugin);
+import { createRxDatabase, addPouchPlugin, getRxStoragePouch } from 'rxdb';
 import * as leveldown from 'leveldown';
 import * as pouchdbAdapterLeveldb from 'pouchdb-adapter-leveldb';
 addPouchPlugin(pouchdbAdapterLeveldb);
 
-import { DBNAME, DBPASSWORD, PATH } from './db.const';
+import { DBNAME, DBPASSWORD, DBPATH } from './db.const';
 
 const createDB = async () => {
     return await createRxDatabase({
-        name: PATH + '/' + DBNAME,
+        name: DBPATH + DBNAME,
         storage: getRxStoragePouch(leveldown),
         password: DBPASSWORD,
         multiInstance: true,

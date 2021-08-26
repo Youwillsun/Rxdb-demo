@@ -35,7 +35,7 @@ export class HomeComponent implements OnInit {
   // 存储所有用户数据
   public userData: Array<UserData> = [];
   // 插入模态框
-  public userInfoDgDiaplay = false;
+  public userInfoDgDisplay = false;
   public dialogHeader = '添加数据';
   // 下拉框选项
   public dropdownOption = [{ key: '男', value: 0 }, { key: '女', value: 1 }]
@@ -88,11 +88,11 @@ export class HomeComponent implements OnInit {
   // 打开添加数据模态框
   openInsertDialog(header: string) {
     this.dialogHeader = header;
-    this.userInfoDgDiaplay = true;
+    this.userInfoDgDisplay = true;
     this.uploadBtnDis = false;
   }
   closeInsertDialog() {
-    this.userInfoDgDiaplay = false;
+    this.userInfoDgDisplay = false;
     this.userInfo = { name: '', age: 0, gender: { key: '男', value: 0 }, id_card: '', filename: '' };
   }
 

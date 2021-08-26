@@ -49,4 +49,4 @@ testem.log
 Thumbs.db
 
 # db files
-/tcx-db
+/tcx-data
