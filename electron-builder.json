@@ -1,5 +1,9 @@
 {
   "asar": false,
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  },
   "directories": {
     "output": "release/"
   },
@@ -10,19 +14,17 @@
     "!package.json",
     "!package-lock.json"
   ],
-  "extraResources": [
-    {
-      "from": "dist",
-      "to": "app",
-      "filter": [
-        "**/*"
-      ]
-    }
-  ],
+  "extraResources": [{
+    "from": "dist",
+    "to": "app",
+    "filter": [
+      "**/*"
+    ]
+  }],
   "win": {
     "icon": "dist/assets/icons",
     "target": [
-      "portable"
+      "nsis"
     ]
   },
   "portable": {

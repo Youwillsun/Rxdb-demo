@@ -29,7 +29,7 @@ export class HomeComponent implements OnInit {
   // 存储所有用户数据
   public userData: Array<UserData> = [];
   // 插入模态框
-  public userInfoDgDiaplay = false;
+  public userInfoDgDisplay = false;
   public dialogHeader = '添加数据';
   // 下拉框选项
   public dropdownOption = [{ key: '男', value: 0 }, { key: '女', value: 1 }]
@@ -74,10 +74,10 @@ export class HomeComponent implements OnInit {
   // 打开添加数据模态框
   openInsertDialog(header: string) {
     this.dialogHeader = header;
-    this.userInfoDgDiaplay = true;
+    this.userInfoDgDisplay = true;
   }
   closeInsertDialog() {
-    this.userInfoDgDiaplay = false;
+    this.userInfoDgDisplay = false;
     this.userInfo = { name: '', age: 0, gender: { key: '男', value: 0 }, id_card: '' };
   }
 
@@ -245,7 +245,6 @@ export class HomeComponent implements OnInit {
           } catch (error) {
             this.messageService.add({ severity: 'error', summary: '失败', detail: `数据写入错误：${error}`, life: 3000 });
           }
-          // child_process.exec(`echo ${JSON.stringify(json)} > ${choosePath}`);
         }).catch(err => {
           this.messageService.add({ severity: 'error', summary: '失败', detail: `数据导出错误：${err}`, life: 3000 });
         });
