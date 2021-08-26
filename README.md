@@ -10,9 +10,11 @@
 
  - 项目构建： `npm run electorn:build`
 
-分支说明：`base`
+分支说明：`parse_excel`
 
- - 此分支只有基本的关于 `user collection`的 `CURD` 和数据的导入导出。
+ - 此分支主要为解析`Excel`模板，并把解析出来的数据导入数据库。
+
+ - ...
 
 **项目运行界面预览图**
 
