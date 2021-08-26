@@ -5,9 +5,9 @@
         <button pButton pRipple type="button" label="添加数据" icon="pi pi-plus" class="p-button-raised"
           (click)="openInsertDialog('添加数据')"></button>
         <div fxLayout="row" fxLayoutGap="1vw">
-          <button pButton pRipple type="button" label="导入数据" pTooltip="只接受 json 格式文件。" icon="pi pi-cloud-download"
+          <button pButton pRipple type="button" label="导入数据" pTooltip="只接受*json*格式文件" tooltipPosition="top" icon="pi pi-cloud-download"
             class="p-button-raised" (click)="importJsonFun()"></button>
-          <button pButton pRipple type="button" label="导出数据" icon="pi pi-cloud-upload" class="p-button-raised"
+          <button pButton pRipple type="button" label="导出数据" icon="pi pi-cloud-upload" pTooltip="导出数据不包含附件，详情见*README.md*" tooltipPosition="top" class="p-button-raised"
             (click)="exportJsonFun()"></button>
         </div>
       </div>
