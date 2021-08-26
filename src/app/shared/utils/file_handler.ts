@@ -1,5 +1,4 @@
 import { createReadStream, ReadStream, createWriteStream, WriteStream, mkdir, constants, access, rmSync } from 'fs';
-import { FILEPATH } from '../../database/db.const';
 
 class ReturnStatus {
     public status: 'success' | 'error';
@@ -90,13 +89,10 @@ const writeFileStream = (stream: Buffer | DataView | string | Object, path: stri
 /**
  * 文件拷贝
  * @param {string} source 被拷贝的文件路径(带文件名)
- * @param {string} target 要拷贝到的路径[可选]
+ * @param {string} target 要拷贝到的路径
  * @returns 返回文件拷贝状态
  */
-const copyFile = (source: string, target?: string) => {
-    const fileExtention = source.split('.');
-    if (!target) target = FILEPATH + `temp.${fileExtention[fileExtention.length - 1]}`;
-
+const copyFile = (source: string, target: string) => {
     return new Promise((resolve, reject) => {
         // 检查文件是否存在
         checkFile(source).then((ch: any) => {
@@ -123,10 +119,10 @@ const copyFile = (source: string, target?: string) => {
 
 /**
  * 检查文件目录并创建文件夹
- * @param path 文件夹路径[可选]
+ * @param path 文件夹路径
  * @returns 返回文件夹状态，当文件夹不存在是会自动创建该文件夹
  */
-const checkDirectory = (path: string = FILEPATH) => {
+const checkDirectory = (path: string) => {
     return new Promise((resolve, reject) => {
         // 判断该目录是否存在
         let pathStatus: boolean;

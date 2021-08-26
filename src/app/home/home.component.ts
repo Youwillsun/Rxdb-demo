@@ -10,6 +10,9 @@ import { DB } from '../database/db.helper';
 const { dialog } = require('electron').remote;
 const fs = require('fs');
 
+import { copyFile } from '../shared/utils/file_handler';
+import { userInfoTemplate_path } from '../shared/static.const';
+
 interface UserData {
   id: string;
   name: string;
@@ -248,6 +251,19 @@ export class HomeComponent implements OnInit {
         }).catch(err => {
           this.messageService.add({ severity: 'error', summary: '失败', detail: `数据导出错误：${err}`, life: 3000 });
         });
+      }
+    });
+  }
+
+  // 下载userInfoTemplate模板文件
+  downloadTemplateFile() {
+    dialog.showSaveDialog({ title: '请选择模板下载位置', defaultPath: '用户信息模板.xlsx', properties: ['showHiddenFiles'] }).then((path: { canceled: boolean, filePath?: string }) => {
+      if (!path.canceled) {
+        copyFile(userInfoTemplate_path, path.filePath).then(res => {
+          console.log(res);
+        }).catch(err => {
+          this.messageService.add({ severity: 'error', summary: '错误', detail: `文件下载出错：${err.detail ?? err}` });
+        })
       }
     });
   }

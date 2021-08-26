@@ -7,8 +7,8 @@
         <div fxLayout="row" fxLayoutGap="1vw">
           <button pButton pRipple type="button" label="导入数据" pTooltip="只接受 json 格式文件。" icon="pi pi-cloud-download"
             class="p-button-raised" (click)="importJsonFun()"></button>
-          <button pButton pRipple type="button" label="导出数据"
-            icon="pi pi-cloud-upload" class="p-button-raised" (click)="exportJsonFun()"></button>
+          <button pButton pRipple type="button" label="导出数据" icon="pi pi-cloud-upload" class="p-button-raised"
+            (click)="exportJsonFun()"></button>
         </div>
       </div>
     </ng-template>
@@ -48,7 +48,10 @@
       </ng-template>
     </p-table>
     <ng-template pTemplate="footer">
-      <div fxLayout="row" fxLayoutGap="5px">
+      <div fxLayout="row" fxLayoutGap="1vw">
+        <button pButton pRipple type="button" icon="pi pi-download" label="下载Excel模板"
+          class="p-button-raised p-button-primary" (click)="downloadTemplateFile()"></button>
+        <button pButton pRipple type="button" label="解析Excel模板" icon="pi pi-table" class="p-button-raised"></button>
         <button pButton pRipple type="button" icon="pi pi-ban" label="清空数据" class="p-button-raised p-button-danger"
           (click)="removeAllData($event)"></button>
       </div>
