@@ -51,7 +51,8 @@
       <div fxLayout="row" fxLayoutGap="1vw">
         <button pButton pRipple type="button" icon="pi pi-download" label="下载Excel模板"
           class="p-button-raised p-button-primary" (click)="downloadTemplateFile()"></button>
-        <button pButton pRipple type="button" label="解析Excel模板" icon="pi pi-table" class="p-button-raised"></button>
+        <button pButton pRipple type="button" label="解析Excel模板" icon="pi pi-table" class="p-button-raised"
+          (click)="parseExcel()"></button>
         <button pButton pRipple type="button" icon="pi pi-ban" label="清空数据" class="p-button-raised p-button-danger"
           (click)="removeAllData($event)"></button>
       </div>
@@ -62,6 +63,8 @@
 <!-- 提示 -->
 <p-toast position="top-center"></p-toast>
 <p-confirmPopup></p-confirmPopup>
+<p-confirmDialog key="confirmDialog" [style]="{width: '50vw'}" [acceptVisible]="false" [rejectVisible]="false">
+</p-confirmDialog>
 
 <!-- dialog——添加 -->
 <p-dialog [header]="dialogHeader" [(visible)]="userInfoDgDisplay" [style]="{width: '50vw'}"

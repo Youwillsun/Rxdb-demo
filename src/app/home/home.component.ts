@@ -8,10 +8,14 @@ import { DB } from '../database/db.helper';
  * Electron dialog：https://www.electronjs.org/docs/api/dialog
  */
 const { dialog } = require('electron').remote;
+// node
 const fs = require('fs');
-
-import { copyFile } from '../shared/utils/file_handler';
+// 文件处理工具
+import { copyFile, readFileStream } from '../shared/utils/file_handler';
+// excel 模板
 import { userInfoTemplate_path } from '../shared/static.const';
+
+const XLSX = require('xlsx');
 
 interface UserData {
   id: string;
@@ -74,11 +78,13 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  // 打开添加数据模态框
+  // 打开模态框
   openInsertDialog(header: string) {
     this.dialogHeader = header;
     this.userInfoDgDisplay = true;
   }
+
+  // 关闭模态框
   closeInsertDialog() {
     this.userInfoDgDisplay = false;
     this.userInfo = { name: '', age: 0, gender: { key: '男', value: 0 }, id_card: '' };
@@ -260,12 +266,117 @@ export class HomeComponent implements OnInit {
     dialog.showSaveDialog({ title: '请选择模板下载位置', defaultPath: '用户信息模板.xlsx', properties: ['showHiddenFiles'] }).then((path: { canceled: boolean, filePath?: string }) => {
       if (!path.canceled) {
         copyFile(userInfoTemplate_path, path.filePath).then(res => {
-          console.log(res);
+          this.messageService.add({ severity: 'success', summary: '成功', detail: '用户信息模板文件下载成功' });
         }).catch(err => {
           this.messageService.add({ severity: 'error', summary: '错误', detail: `文件下载出错：${err.detail ?? err}` });
         })
       }
     });
   }
+
+  // 解析excel模板
+  parseExcel() {
+    dialog.showOpenDialog({ title: '请选择要解析的模板', filters: [{ name: 'excel', extensions: ['xlsx', 'xls'] }], properties: ['openFile'] }).then((path: { canceled: Boolean, filePaths: Array<string> }) => {
+      if (!path.canceled) {
+        const choosePath = path.filePaths[0];
+        readFileStream(choosePath).then(async (res: any) => {
+          const wb = XLSX.read(res.data, { type: 'buffer' });
+          let excelData: Array<any> = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+          excelData.shift();
+          // 将 id_card 转换为 字符串
+          excelData = excelData.map(item => {
+            item.id_card = String(item.id_card);
+            return item;
+          })
+          this.bulkInsertData(excelData)
+        });
+      }
+    });
+  }
+
+  // 数据库批量插入数据
+  bulkInsertData(excelData: Array<{ name: string, age: number, gender: string, id_card: string }>) {
+    // 首先判断excelData中的身份证号是否重复 在判断与数据库中存在的数据是否重复
+    let idCardArr = excelData.map(item => item.id_card);
+    // 获取到其中重复的数据
+    let repeatingIdCard = Array.from(new Set(idCardArr.filter(item => idCardArr.indexOf(item) !== idCardArr.lastIndexOf(item))));
+    if (repeatingIdCard.length) {
+      // 如果重复就进行提示
+      this.confirmationService.confirm({
+        message: `身份证号：${repeatingIdCard.join(' , ')} 重复.`,
+        header: '请检查！',
+        icon: 'pi pi-exclamation-triangle',
+        key: "confirmDialog"
+      });
+      return;
+    } else {
+      // 查找数据
+      const FindOne = (id_card: string) => {
+        return new Promise(async (resolve, reject) => {
+          (await userColt).findOne({ selector: { id_card: id_card } }).exec().then(res => {
+            if (res) {
+              reject({ status: 'error', data: id_card });
+            } else {
+              resolve({ status: 'success', data: null });
+            }
+          }).catch(err => {
+            reject({ status: 'error', data: id_card });
+          });
+        });
+      }
+
+      // 检查数据是否和数据库中的数据重复
+      const chekcRepeatingData = () => {
+        return new Promise(async (resolve, reject) => {
+          // 获取到不重复的数据
+          let noRepeatingIdCard = Array.from(new Set(idCardArr));
+          for (let i = 0; i < noRepeatingIdCard.length; i++) {
+            // 查询
+            try {
+              let data: any = await FindOne(noRepeatingIdCard[i]);
+              if (data.data) {
+                reject({ status: 'error', data: data.data });
+                return;
+              }
+            } catch (error) {
+              reject({ status: 'error', data: noRepeatingIdCard[i] });
+            }
+            break;
+          }
+          // 所有数据都不重复，就返回成功
+          resolve({ status: 'success', data: null });
+        })
+      };
+
+      chekcRepeatingData().then(async p => {
+        // 向数据库中插入数据
+        let arr = excelData.map(item => {
+          return new UserCls(item.name, item.age, item.gender === '男' ? 0 : 1, item.id_card);
+        });
+
+        (await userColt).bulkInsert(arr).then(async res => {
+          if (res.error.length === 0) {
+            this.queryData();
+            this.messageService.add({ severity: 'success', summary: '成功', detail: '模板数据插入成功' });
+          } else {
+            // 把插入成功的数据全部删除
+            let idArr = res.success.map(item => {
+              return item.get('id');
+            });
+            // 将插入的数据全部抹除
+            (await userColt).bulkRemove(idArr).then(d => {
+              this.messageService.add({ severity: 'error', summary: '错误', detail: '模板数据插入失败' });
+            });
+          }
+        }).catch(err => {
+          this.messageService.add({ severity: 'error', summary: '错误', detail: '模板数据插入失败：' + err });
+        });
+      }).catch(err => {
+        // 如果数据库总存在身份证号为 item 的数据
+        this.messageService.add({ severity: 'warn', summary: '导入错误，身份证号重复', detail: `身份证号：${err.data} 已存在，请处理！` });
+      });
+    }
+  }
+
 
 }

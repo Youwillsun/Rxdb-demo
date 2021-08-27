@@ -39,8 +39,8 @@
     "lint": "ng lint"
   },
   "dependencies": {
-    "@angular/animations": "12.2.1",
-    "@angular/cdk": "12.2.1",
+    "@angular/animations": "12.1.2",
+    "@angular/cdk": "12.1.2",
     "@angular/common": "12.1.2",
     "@angular/compiler": "12.1.2",
     "@angular/core": "12.1.2",
@@ -58,10 +58,12 @@
     "primeflex": "3.0.1",
     "primeicons": "4.1.0",
     "primeng": "12.1.0-rc.1",
+    "read-excel-file": "5.2.9",
     "rxdb": "10.0.3",
     "rxjs": "~7.3.0",
     "tslib": "^2.1.0",
     "webpack": "5.50.0",
+    "xlsx": "0.17.1",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
